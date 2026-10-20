@@ -1,0 +1,133 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/plus-jakarta-sans";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: 'Space Grotesk Variable', sans-serif;
+    --font-sans: 'Plus Jakarta Sans Variable', sans-serif;
+    --font-mono: 'JetBrains Mono Variable', monospace;
+    --color-flame: #FF6B00;
+    --color-amber-glow: #FF9800;
+    --color-obsidian: #0D0D11;
+    --color-surface: #16161D;
+    --color-surface-2: #20202B;
+    --color-line: #2C2C3A;
+    --animate-ember: ember 2.4s ease-in-out infinite;
+    --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    --animate-bump: bump 0.35s ease-out;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@keyframes ember {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.45); }
+    50% { box-shadow: 0 0 28px 4px rgba(255, 107, 0, 0.25); }
+}
+@keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+:root, .dark {
+    --background: #0D0D11;
+    --foreground: #F4F4F6;
+    --card: #16161D;
+    --card-foreground: #FFFFFF;
+    --popover: #16161D;
+    --popover-foreground: #FFFFFF;
+    --primary: #FF6B00;
+    --primary-foreground: #FFFFFF;
+    --secondary: #20202B;
+    --secondary-foreground: #F4F4F6;
+    --muted: #1F1F2A;
+    --muted-foreground: #A1A1AA;
+    --accent: #20202B;
+    --accent-foreground: #FFFFFF;
+    --destructive: #EF4444;
+    --border: #2C2C3A;
+    --input: #2C2C3A;
+    --ring: #FF6B00;
+    --chart-1: #FF6B00;
+    --chart-2: #FF9800;
+    --chart-3: #10B981;
+    --chart-4: #3B82F6;
+    --chart-5: #EF4444;
+    --radius: 0.75rem;
+    --sidebar: #16161D;
+    --sidebar-foreground: #F4F4F6;
+    --sidebar-primary: #FF6B00;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #20202B;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #2C2C3A;
+    --sidebar-ring: #FF6B00;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    background-image: radial-gradient(ellipse at top left, rgba(255, 107, 0, 0.08), transparent 55%);
+    background-attachment: fixed;
+    }
+  html {
+    @apply font-sans;
+    }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.grain {
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 6px);
+}
