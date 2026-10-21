@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Lock, LogOut, MapPin, Phone, RefreshCw } from "lucide-react";
+import { Lock, LogOut, MapPin, Phone, RefreshCw, Volume2, VolumeX } from "lucide-react";
+import AdminMenu from "@/components/admin/AdminMenu";
+import AdminHours from "@/components/admin/AdminHours";
+import { useNewOrderAlert } from "@/components/admin/useNewOrderAlert";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +44,65 @@ export default function AdminPage() {
           )}
         </div>
       </header>
-      {me.isLoading ? null : authed ? <Dashboard /> : <PinGate />}
+      {me.isLoading ? null : authed ? <AdminArea /> : <PinGate />}
     </div>
+  );
+}
+
+const TABS = [
+  { id: "pedidos", label: "Pedidos" },
+  { id: "cardapio", label: "Cardápio" },
+  { id: "horarios", label: "Horários" },
+] as const;
+
+function AdminArea() {
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("pedidos");
+  const { soundOn, toggle } = useNewOrderAlert();
+  return (
+    <>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 pt-6 sm:px-6">
+        <div className="flex gap-1 rounded-full border border-line bg-surface p-1">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-semibold transition-[background-color,color] duration-200",
+                tab === t.id ? "bg-flame text-white" : "text-muted-foreground hover:text-foreground",
+              )}
+              data-testid={`admin-tab-${t.id}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={toggle}
+          className={cn(
+            "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-[background-color,border-color] duration-200",
+            soundOn ? "border-flame/50 bg-flame/10 text-flame" : "border-line text-muted-foreground",
+          )}
+          data-testid="admin-sound-toggle"
+          data-on={soundOn}
+        >
+          {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          {soundOn ? "Som ligado" : "Som desligado"}
+        </button>
+      </div>
+      {tab === "pedidos" && <Dashboard />}
+      {tab === "cardapio" && (
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <h1 className="mb-6 font-heading text-3xl font-black tracking-tight">Cardápio</h1>
+          <AdminMenu />
+        </main>
+      )}
+      {tab === "horarios" && (
+        <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+          <h1 className="mb-6 font-heading text-3xl font-black tracking-tight">Horário de funcionamento</h1>
+          <AdminHours />
+        </main>
+      )}
+    </>
   );
 }
 

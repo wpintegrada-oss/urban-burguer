@@ -23,6 +23,8 @@ from lib.db import client, db, ensure_indexes
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.index_task = asyncio.create_task(ensure_indexes())  # background: a big index build must not block boot
+    from lib.store import seed_menu
+    await seed_menu()
     yield
     client.close()
 
@@ -61,7 +63,9 @@ async def get_status_checks():
     return [StatusCheck(**status_check) for status_check in status_checks]
 
 from routers.shop import router as shop_router  # noqa: E402
+from routers.catalog import router as catalog_router  # noqa: E402
 api_router.include_router(shop_router)
+api_router.include_router(catalog_router)
 
 # Include the router in the main app
 app.include_router(api_router)

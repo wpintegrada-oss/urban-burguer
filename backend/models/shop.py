@@ -28,6 +28,43 @@ class MenuItem(BaseModel):
     image: str
     allows_addons: bool
     badge: Optional[str] = None
+    available: bool = True
+    position: int = 0
+
+
+class MenuItemUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=2, max_length=80)
+    price: Optional[float] = Field(default=None, gt=0, le=1000)
+    description: Optional[str] = Field(default=None, max_length=300)
+    image: Optional[str] = Field(default=None, min_length=1, max_length=1000)
+    badge: Optional[str] = Field(default=None, max_length=30)  # "" clears the badge
+    available: Optional[bool] = None
+
+
+class ImageUploaded(BaseModel):
+    url: str
+
+
+HHMM = r"^([01]\d|2[0-3]):[0-5]\d$"
+
+
+class DayHours(BaseModel):
+    day: int = Field(ge=0, le=6)  # 0 = segunda ... 6 = domingo
+    enabled: bool
+    open: str = Field(pattern=HHMM)
+    close: str = Field(pattern=HHMM)
+
+
+class StoreSettings(BaseModel):
+    force_closed: bool = False
+    hours: list[DayHours] = Field(min_length=7, max_length=7)
+
+
+class StoreStatus(BaseModel):
+    is_open: bool
+    message: str
+    force_closed: bool
+    hours: list[DayHours]
 
 
 class Menu(BaseModel):

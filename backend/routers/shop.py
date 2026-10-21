@@ -5,16 +5,16 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
+from lib.auth import COOKIE, is_admin, require_admin
 from lib.dates import today_iso
 from lib.db import db
-from lib.menu import ADDONS, ADDONS_BY_ID, CATEGORIES, ITEMS, ITEMS_BY_ID
+from lib.menu import ADDONS_BY_ID
+from lib.store import TZ, compute_status, get_settings
 from models.shop import (
-    AdminLogin, AdminMe, AdminStats, Menu, Order, OrderCreate, OrderLine, StatusUpdate, Addon,
+    AdminLogin, AdminMe, AdminStats, Order, OrderCreate, OrderLine, StatusUpdate, Addon,
 )
 
 router = APIRouter()
-TZ = "America/Fortaleza"
-COOKIE = "ub_admin"
 
 
 def _utc(dt: datetime) -> datetime:
@@ -27,18 +27,20 @@ def _order(doc: dict) -> Order:
     return Order(**doc)
 
 
-@router.get("/menu", response_model=Menu)
-async def get_menu():
-    return Menu(categories=CATEGORIES, items=ITEMS, addons=ADDONS)
-
-
 @router.post("/orders", response_model=Order)
 async def create_order(body: OrderCreate):
+    is_open, msg = compute_status(await get_settings())
+    if not is_open:
+        raise HTTPException(403, msg)
+    ids = list({it.item_id for it in body.items})
+    items = {d["id"]: d for d in await db.menu_items.find({"id": {"$in": ids}}, {"_id": 0}).to_list(len(ids))}
     lines: list[OrderLine] = []
     for it in body.items:
-        item = ITEMS_BY_ID.get(it.item_id)
+        item = items.get(it.item_id)
         if not item:
             raise HTTPException(400, f"Item inválido: {it.item_id}")
+        if not item.get("available", True):
+            raise HTTPException(400, f"{item['name']} está esgotado no momento")
         addons = []
         if it.addon_ids:
             if not item["allows_addons"]:
@@ -68,12 +70,6 @@ async def get_order(id: str):
 
 
 # ---------------- admin ----------------
-async def require_admin(request: Request):
-    token = request.cookies.get(COOKIE)
-    if not token or not await db.admin_sessions.find_one({"token": token}):
-        raise HTTPException(401, "Não autorizado")
-
-
 @router.post("/admin/login", response_model=AdminMe)
 async def admin_login(body: AdminLogin, response: Response):
     if not secrets.compare_digest(body.pin, os.environ.get("ADMIN_PIN", "1234")):
@@ -95,9 +91,7 @@ async def admin_logout(request: Request, response: Response):
 
 @router.get("/admin/me", response_model=AdminMe)
 async def admin_me(request: Request):
-    token = request.cookies.get(COOKIE)
-    ok = bool(token and await db.admin_sessions.find_one({"token": token}))
-    return AdminMe(authenticated=ok)
+    return AdminMe(authenticated=await is_admin(request))
 
 
 @router.get("/admin/orders", response_model=list[Order], dependencies=[Depends(require_admin)])

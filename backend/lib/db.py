@@ -25,6 +25,12 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("created_at", DESCENDING)], name="created_desc"),
         IndexModel([("date", ASCENDING)], name="date"),
     ],
+    "menu_items": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("position", ASCENDING)], name="position"),
+    ],
+    "images": [IndexModel([("id", ASCENDING)], name="id", unique=True)],
+    "settings": [IndexModel([("id", ASCENDING)], name="id", unique=True)],
     "admin_sessions": [
         IndexModel([("token", ASCENDING)], name="token", unique=True),
         IndexModel([("created_at", ASCENDING)], name="ttl", expireAfterSeconds=60 * 60 * 24 * 7),

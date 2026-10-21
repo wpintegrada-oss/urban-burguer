@@ -22,6 +22,40 @@ export interface MenuItem {
   image: string;
   allows_addons: boolean;
   badge: string | null;
+  available: boolean;
+  position: number;
+}
+
+export interface MenuItemUpdate {
+  name?: string;
+  price?: number;
+  description?: string;
+  image?: string;
+  badge?: string;
+  available?: boolean;
+}
+
+export interface ImageUploaded {
+  url: string;
+}
+
+export interface DayHours {
+  day: number; // 0 = segunda ... 6 = domingo
+  enabled: boolean;
+  open: string;
+  close: string;
+}
+
+export interface StoreSettings {
+  force_closed: boolean;
+  hours: DayHours[];
+}
+
+export interface StoreStatus {
+  is_open: boolean;
+  message: string;
+  force_closed: boolean;
+  hours: DayHours[];
 }
 
 export interface Menu {

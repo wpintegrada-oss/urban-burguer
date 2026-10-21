@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart";
 import { brl, WHATSAPP_DISPLAY } from "@/lib/format";
 import type { Menu, MenuItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useStoreStatus } from "@/lib/store";
 
 const HERO = "https://images.pexels.com/photos/18987002/pexels-photo-18987002.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=900&w=1400";
 
@@ -17,6 +18,7 @@ export default function MenuPage() {
   const [active, setActive] = useState("especiais");
   const [selected, setSelected] = useState<MenuItem | null>(null);
   const { count, total, setOpen } = useCart();
+  const store = useStoreStatus();
   const menu = isError ? undefined : data;
 
   const goTo = (id: string) => {
@@ -70,6 +72,20 @@ export default function MenuPage() {
       </section>
 
       {/* Category pills */}
+      {store && (
+        <div
+          className={cn(
+            "border-b px-4 py-3 text-center text-sm font-semibold",
+            store.is_open ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-red-500/30 bg-red-500/10 text-red-300",
+          )}
+          data-testid="store-status-banner"
+          data-open={store.is_open}
+        >
+          <span className={cn("mr-2 inline-block h-2 w-2 rounded-full", store.is_open ? "bg-emerald-400 animate-pulse" : "bg-red-400")} />
+          {store.message}
+          {!store.is_open && <span className="font-normal text-red-300/80"> — você pode ver o cardápio, mas os pedidos estão pausados.</span>}
+        </div>
+      )}
       <nav className="sticky top-16 z-30 border-b border-line bg-obsidian/85 backdrop-blur-xl">
         <div className="no-scrollbar mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
           {(menu?.categories ?? []).map((c) => (
@@ -115,8 +131,14 @@ export default function MenuPage() {
                 {items.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setSelected(item)}
-                    className="group flex gap-4 rounded-2xl border border-line bg-surface p-3 text-left transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-flame/60 hover:shadow-[0_12px_40px_-12px_rgba(255,107,0,0.35)]"
+                    onClick={() => item.available && setSelected(item)}
+                    disabled={!item.available}
+                    className={cn(
+                      "group flex gap-4 rounded-2xl border border-line bg-surface p-3 text-left transition-[border-color,transform,box-shadow] duration-300",
+                      item.available
+                        ? "hover:-translate-y-0.5 hover:border-flame/60 hover:shadow-[0_12px_40px_-12px_rgba(255,107,0,0.35)]"
+                        : "cursor-not-allowed opacity-50 grayscale",
+                    )}
                     data-testid={`menu-item-${item.id}`}
                   >
                     <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl">
@@ -128,7 +150,11 @@ export default function MenuPage() {
                       />
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col">
-                      {item.badge && (
+                      {!item.available ? (
+                        <span className="mb-1 w-fit rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-300" data-testid={`menu-item-soldout-${item.id}`}>
+                          Esgotado
+                        </span>
+                      ) : item.badge && (
                         <span className="mb-1 w-fit rounded-full bg-flame/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-flame">
                           {item.badge}
                         </span>

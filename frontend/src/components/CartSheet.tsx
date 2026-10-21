@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Banknote, CreditCard, Minus, Plus, QrCode, ShoppingBag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -13,6 +13,7 @@ import { useCart } from "@/lib/cart";
 import { brl, whatsappLink } from "@/lib/format";
 import type { Order, OrderCreate, PaymentMethod } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useStoreStatus } from "@/lib/store";
 
 const PAYMENTS: { id: PaymentMethod; label: string; desc: string; Icon: typeof QrCode }[] = [
   { id: "pix", label: "PIX", desc: "Chave enviada no WhatsApp", Icon: QrCode },
@@ -38,6 +39,8 @@ export default function CartSheet() {
   const [form, setForm] = useState(EMPTY);
   const [payment, setPayment] = useState<PaymentMethod>("pix");
   const navigate = useNavigate();
+  const store = useStoreStatus();
+  const qc = useQueryClient();
 
   const set = (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -54,6 +57,8 @@ export default function CartSheet() {
       navigate(`/pedido/${order.id}`);
     },
     onError: (err) => {
+      qc.invalidateQueries({ queryKey: ["store"] });
+      qc.invalidateQueries({ queryKey: ["menu"] });
       const detail = err instanceof ApiError && err.body && typeof err.body === "object" && "detail" in err.body
         ? (err.body as { detail: unknown }).detail
         : null;
@@ -223,12 +228,15 @@ export default function CartSheet() {
               </div>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || store?.is_open === false}
                 className="h-12 w-full rounded-full font-bold animate-ember"
                 data-testid="checkout-submit-button"
               >
-                {mutation.isPending ? "Enviando..." : "Enviar pedido pelo WhatsApp"}
+                {mutation.isPending ? "Enviando..." : store?.is_open === false ? "Loja fechada no momento" : "Enviar pedido pelo WhatsApp"}
               </Button>
+              {store?.is_open === false && (
+                <p className="text-center text-xs text-red-300" data-testid="checkout-closed-message">{store.message}</p>
+              )}
             </div>
           </form>
         )}
